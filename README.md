@@ -1,5 +1,8 @@
 # README
 
+[![benkyriakou](https://circleci.com/gh/benkyriakou/deja-utils.svg?style=shield)](https://app.circleci.com/pipelines/github/benkyriakou/deja-utils)
+
+
 Duplicity, the built-in backup utility on Ubuntu, doesn't support adding wildcards or directory names to ignore when running backups - only full directory paths. Additionally, to set these programatically via `gsettings` requires some specific formatting and escaping.
 
 Enter `deja-dirs`, a simple bash utility for matching and generating lists of directories to be added to Duplicity via gsettings.
