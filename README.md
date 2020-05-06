@@ -86,6 +86,6 @@ gsettings set org.gnome.DejaDup exclude-list "${EXCLDIRS}"
 
 Without the confirmation dialog, this could be automated on a cronjob to automatically update your exclude list as you add or remove files from your machine.
 
-# Tests
+## Tests
 
 To run the built-in tests, requires [bats](https://github.com/sstephenson/bats) to be installed on your machine. Then you can run the tests with `make test`.
