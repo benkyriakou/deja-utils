@@ -1,19 +1,20 @@
 #! /bin/bash
 
-set -euo pipefail
+set -o errexit -o nounset -o pipefail
 
 if (( ! "${#}" )) || [[ "${1}" = "-h" ]]
 then
-  echo "Usage: deja-dirs name [-c contains] [-b basedir]" 1>&2
+  echo "Usage: deja-dirs name [-c contains] [-b basedir] [-f filesource] [-d]" 1>&2
   exit 1
 fi
 
 CONTAINS=""
+FILESRC=""
 BASE="."
 NAME="${1}"
 shift
 
-while getopts "c:b:" OPT
+while getopts "c:b:f:d" OPT
 do
   case "${OPT}" in
     c )
@@ -28,6 +29,24 @@ do
       else
         echo "Base '${OPTARG}' is not a directory" 1>&2
         exit 1
+      fi
+      ;;
+    d )
+      set -o xtrace
+      ;;
+    f )
+      OPTARG="$(realpath "${OPTARG/#\~/$HOME}")"
+
+      if [[ ! -f "${OPTARG}" ]]
+      then
+        echo "'${OPTARG} is not a file" 1>&2
+        exit 1
+      elif [[ ! -r "${OPTARG}" ]]
+      then
+        echo "'${OPTARG} is not readable" 1>&2
+        exit 1
+      else
+        FILESRC="${OPTARG}"
       fi
       ;;
     \? )
@@ -73,12 +92,18 @@ dejapath()
 
 # Get all occurrences of the directory that don't also have the directory
 # in the path (e.g. nested node_modules directories).
-mapfile -d "" -t FOUND < <(find "${BASE}" -name "${NAME}" -type d -print0 | grep -Fv "/${NAME}/" --null --null-data)
+if [[ -n "${FILESRC}" ]]
+then
+  mapfile -t < "${FILESRC}" FOUND
+else
+  mapfile -d "" -t FOUND < <(find "${BASE}" -name "${NAME}" -type d -print0 | grep -Fv "/${NAME}/" --null --null-data)
+fi
+
 FULLPATHS=()
 
 for F in "${FOUND[@]}"
 do
-  if [[ -z "${CONTAINS}" || -e "${F}/${CONTAINS}" ]]
+  if [[ -e "${F}" ]] && [[ -z "${CONTAINS}" || -e "${F}/${CONTAINS}" ]]
   then
       F="$(dejapath "${F}")"
       FULLPATHS+=( "${F}" )
