@@ -22,6 +22,18 @@ The `deja-dirs` utility has the following options:
 - `-d` turns on debug mode with `set -o xtrace`.
 - `-f` allows the use of a file as a source of paths. This is useful if you have some preset static paths you want to escape. This option causes the directory name and `-b` to be ignored, but can be used in conjunction with `-c`.
 
+## Installation
+
+If you have `make` and `install` available, you can install with:
+
+```bash
+git clone git@github.com:benkyriakou/deja-utils.git
+cd deja-utils
+sudo make install
+```
+
+This will install deja-utils into `/usr/bin`. For a different location, such as `/usr/local/bin`, you can run `sudo cp deja-dirs /usr/local/bin/deja-dirs`.
+
 ## Examples
 
 ```bash
@@ -73,3 +85,7 @@ gsettings set org.gnome.DejaDup exclude-list "${EXCLDIRS}"
 ```
 
 Without the confirmation dialog, this could be automated on a cronjob to automatically update your exclude list as you add or remove files from your machine.
+
+# Tests
+
+To run the built-in tests, requires [bats](https://github.com/sstephenson/bats) to be installed on your machine. Then you can run the tests with `make test`.
