@@ -1,17 +1,11 @@
 #! /usr/bin/env bats
 
-TEST_ARTIFACTS_DIR="/tmp/deja-test-artifacts"
+TEST_ARTIFACTS_DIR=
 
 # Create a test artifacts directory in /tmp.
 setup()
 {
-  if [[ -e "${TEST_ARTIFACTS_DIR}" ]]
-  then
-    echo "The test artifacts directory '${TEST_ARTIFACTS_DIR}' already exists" 1>&2
-    return 1
-  fi
-
-  mkdir "${TEST_ARTIFACTS_DIR}"
+  TEST_ARTIFACTS_DIR="$(mktemp -d)"
 }
 
 # Remove any test files and directories.
@@ -26,7 +20,7 @@ teardown()
 @test "Running without arguments gives usage" {
   run deja-dirs
   [ "$status" -eq 1 ]
-  [ "$output" =  "Usage: deja-dirs name [-c contains] [-b basedir]" ]
+  [[ "$output" =~  ^Usage: ]]
 }
 
 @test "Running with a basic directory" {
@@ -81,9 +75,37 @@ teardown()
 }
 
 @test "Running with a different base" {
-  mkdir "${TEST_ARTIFACTS_DIR}-1"
-  run deja-dirs "foo" -b "${TEST_ARTIFACTS_DIR}-1"
-  rmdir "${TEST_ARTIFACTS_DIR}-1"
+	local TEST_BASE
+	TEST_BASE="$(mktemp -d)"
+  run deja-dirs "foo" -b "${TEST_BASE}"
+  rmdir "${TEST_BASE}"
   [ "$status" -eq 1 ]
   [ "$output" = "" ]
+}
+
+@test "Running with file input" {
+	local FILE_MANIFEST
+	FILE_MANIFEST="${TEST_ARTIFACTS_DIR}/example.txt"
+
+	echo "/tmp" >> "${FILE_MANIFEST}"
+	echo "/foobar" >> "${FILE_MANIFEST}"
+
+	run deja-dirs -- -f "${FILE_MANIFEST}"
+	[ "$status" -eq 0 ]
+  [ "$output" = "'/tmp'" ]
+}
+
+@test "Running with file input and contains" {
+	local FILE_MANIFEST
+	FILE_MANIFEST="${TEST_ARTIFACTS_DIR}/example.txt"
+
+	echo "${TEST_ARTIFACTS_DIR}/foo" >> "${FILE_MANIFEST}"
+	echo "${TEST_ARTIFACTS_DIR}/bar" >> "${FILE_MANIFEST}"
+
+	mkdir "${TEST_ARTIFACTS_DIR}/foo" "${TEST_ARTIFACTS_DIR}/bar"
+	touch "${TEST_ARTIFACTS_DIR}/bar/file.txt"
+
+	run deja-dirs -- -f "${FILE_MANIFEST}" -c "file.txt"
+	[ "$status" -eq 0 ]
+  [ "$output" = "'${TEST_ARTIFACTS_DIR}/bar'" ]
 }

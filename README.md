@@ -13,13 +13,25 @@ For a basic invocation, simply call `deja-dirs` with the name of the directory t
 ~/ > cd workdir
 ~/workdir/ > deja-dirs node_modules
 'project1/node_modules', 'project2/front-end/js/node_modules'
-~/workdir/ >
 ```
 
 The `deja-dirs` utility has the following options:
 
 - `-b` allows you to set the base directory that file discovery happens from. When `-b` is not set, the default is the current working directory.
 - `-c` allows you to specify a file that must be contained in the directory for it to match. For example, to match PHP `vendor` directories you could specify `-c autoload.php`.
+- `-d` turns on debug mode with `set -o xtrace`.
+- `-f` allows the use of a file as a source of paths. This is useful if you have some preset static paths you want to escape. This option causes the directory name and `-b` to be ignored, but can be used in conjunction with `-c`.
+
+## Examples
+
+```bash
+deja-dirs "node_modules" -b "~/Documents"
+deja-dirs "vendor" -b "~/Documents" -c "autoload.php"
+deja-dirs -- -f "~/.deja-manifest"
+deja-dirs -- -f "~/.deja-manifest" -c "file.txt"
+```
+
+## Scripting
 
 To create a script that you can use to manually or automatically update the list of excluded directories in Duplicity, you first need to get your current exclude list. You can do this with:
 
